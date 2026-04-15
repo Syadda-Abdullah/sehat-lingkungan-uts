@@ -19,9 +19,9 @@ app.use(express.json());
 // KONFIGURASI AWS S3 & MULTER (UPLOAD)
 // ==========================================
 const s3 = new AWS.S3({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: 'ap-southeast-2' 
+    accessKeyId: 'AKIAQTIAIAT6627V3B4K',
+    secretAccessKey: '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',
+    region: 'ap-southeast-2' // Ganti ke 'ap-southeast-1' JIKA bucket Anda di Singapore
 });
 
 // Menggunakan memoryStorage agar file tidak membebani hardisk EC2
