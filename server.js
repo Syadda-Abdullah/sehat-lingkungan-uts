@@ -87,12 +87,12 @@ app.post('/lapor', upload.single('foto'), (req, res) => {
     const fileName = `laporan_lingkungan_${Date.now()}${path.extname(file.originalname)}`;
     
     const s3Params = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: fileName,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        // Pastikan file S3 bisa dibaca publik agar muncul di website
-        ACL: 'public-read' 
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fileName,
+    Body: file.buffer,
+    ContentType: file.mimetype, // Ini krusial agar browser tahu itu PDF atau Gambar
+    ACL: 'public-read',
+    ContentDisposition: 'inline' // Tambahkan ini agar file dibuka di browser (inline), bukan dipaksa download
     };
 
     console.log(`Mulai mengunggah file ${fileName} ke S3...`);
