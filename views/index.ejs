@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SehatLingkungan - Portal Laporan Warga</title>
+    <style>
+        :root {
+            --primary: #00766c;
+            --secondary: #b2dfdb;
+            --bg-color: #f5f7fa;
+            --text-main: #333;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1.5rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 { margin: 0; font-size: 2rem; }
+        header p { margin: 5px 0 0 0; opacity: 0.9; }
+        
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        
+        /* Form Styling */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .card h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
+        input[type="text"], textarea, input[type="file"] {
+            width: 100%; padding: 12px; border: 1px solid #ddd;
+            border-radius: 8px; box-sizing: border-box; font-family: inherit;
+        }
+        textarea { resize: vertical; }
+        input[type="file"] { background: #f9f9f9; cursor: pointer; }
+        
+        button {
+            background: var(--primary); color: white; border: none;
+            padding: 14px 24px; font-size: 16px; font-weight: bold;
+            border-radius: 8px; cursor: pointer; width: 100%; transition: 0.3s;
+        }
+        button:hover { background: #00564d; }
+
+        /* Feed / List Laporan */
+        .report-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+        }
+        .report-card {
+            background: white; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08); transition: transform 0.2s;
+        }
+        .report-card:hover { transform: translateY(-5px); }
+        .report-img {
+            width: 100%; height: 200px; object-fit: cover; background: #eee;
+        }
+        .report-body { padding: 15px; }
+        .report-meta { font-size: 0.85rem; color: #777; margin-bottom: 10px; }
+        .report-desc { font-size: 1rem; color: #222; font-weight: 500; }
+        
+        .empty-state { text-align: center; color: #888; padding: 2rem; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌱 SehatLingkungan</h1>
+        <p>Portal Pelaporan Masalah Kesehatan & Sanitasi Lingkungan</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Buat Laporan Baru</h2>
+            <form action="/lapor" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="nama_pelapor">Nama Pelapor / Inisial</label>
+                    <input type="text" id="nama_pelapor" name="nama_pelapor" placeholder="Contoh: Budi S." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="deskripsi">Deskripsi Masalah & Lokasi</label>
+                    <textarea id="deskripsi" name="deskripsi" rows="3" placeholder="Contoh: Terdapat tumpukan sampah basah di ujung Jalan Mawar 2 yang menyumbat selokan." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="foto">Unggah Foto Bukti Fisik</label>
+                    <input type="file" id="foto" name="foto" accept="image/*" required>
+                </div>
+                
+                <button type="submit" onclick="this.innerHTML='Mengirim Laporan...';">Kirim Laporan ke Server</button>
+            </form>
+        </div>
+
+        <h2 style="color: var(--primary);">📋 Dasbor Pemantauan Publik</h2>
+        
+        <% if (laporan.length === 0) { %>
+            <div class="empty-state">
+                Belum ada laporan yang masuk. Lingkungan Anda masih aman!
+            </div>
+        <% } else { %>
+            <div class="report-grid">
+                <% laporan.forEach(function(item) { %>
+                    <div class="report-card">
+                        <% if (item.foto_url) { %>
+                            <img src="<%= item.foto_url %>" alt="Bukti Laporan" class="report-img" loading="lazy">
+                        <% } %>
+                        <div class="report-body">
+                            <div class="report-meta">
+                                <strong>👤 <%= item.nama_pelapor %></strong> <br>
+                                🕒 <%= new Date(item.tanggal).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) %>
+                            </div>
+                            <div class="report-desc">
+                                "<%= item.deskripsi %>"
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+
+</body>
+</html>
