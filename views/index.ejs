@@ -3,140 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SehatLingkungan - Portal Laporan Warga</title>
-    <style>
-        :root {
-            --primary: #00766c;
-            --secondary: #b2dfdb;
-            --bg-color: #f5f7fa;
-            --text-main: #333;
-        }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-        header {
-            background: var(--primary);
-            color: white;
-            padding: 1.5rem 0;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        header h1 { margin: 0; font-size: 2rem; }
-        header p { margin: 5px 0 0 0; opacity: 0.9; }
-        
-        .container {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 0 20px;
-        }
-        
-        /* Form Styling */
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-        }
-        .card h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--secondary); padding-bottom: 10px; }
-        
-        .form-group { margin-bottom: 1.5rem; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
-        input[type="text"], textarea, input[type="file"] {
-            width: 100%; padding: 12px; border: 1px solid #ddd;
-            border-radius: 8px; box-sizing: border-box; font-family: inherit;
-        }
-        textarea { resize: vertical; }
-        input[type="file"] { background: #f9f9f9; cursor: pointer; }
-        
-        button {
-            background: var(--primary); color: white; border: none;
-            padding: 14px 24px; font-size: 16px; font-weight: bold;
-            border-radius: 8px; cursor: pointer; width: 100%; transition: 0.3s;
-        }
-        button:hover { background: #00564d; }
-
-        /* Feed / List Laporan */
-        .report-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
-        }
-        .report-card {
-            background: white; border-radius: 10px; overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08); transition: transform 0.2s;
-        }
-        .report-card:hover { transform: translateY(-5px); }
-        .report-img {
-            width: 100%; height: 200px; object-fit: cover; background: #eee;
-        }
-        .report-body { padding: 15px; }
-        .report-meta { font-size: 0.85rem; color: #777; margin-bottom: 10px; }
-        .report-desc { font-size: 1rem; color: #222; font-weight: 500; }
-        
-        .empty-state { text-align: center; color: #888; padding: 2rem; font-style: italic; }
-    </style>
+    <title>SehatLingkungan | Sistem Laporan Masyarakat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-slate-50 font-sans">
 
-    <header>
-        <h1>🌱 SehatLingkungan</h1>
-        <p>Portal Pelaporan Masalah Kesehatan & Sanitasi Lingkungan</p>
-    </header>
-
-    <div class="container">
-        <div class="card">
-            <h2>Buat Laporan Baru</h2>
-            <form action="/lapor" method="POST" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="nama_pelapor">Nama Pelapor / Inisial</label>
-                    <input type="text" id="nama_pelapor" name="nama_pelapor" placeholder="Contoh: Budi S." required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="deskripsi">Deskripsi Masalah & Lokasi</label>
-                    <textarea id="deskripsi" name="deskripsi" rows="3" placeholder="Contoh: Terdapat tumpukan sampah basah di ujung Jalan Mawar 2 yang menyumbat selokan." required></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="foto">Unggah Foto Bukti Fisik</label>
-                    <input type="file" id="foto" name="foto" accept="image/*" required>
-                </div>
-                
-                <button type="submit" onclick="this.innerHTML='Mengirim Laporan...';">Kirim Laporan ke Server</button>
-            </form>
+    <nav class="bg-emerald-600 text-white shadow-lg p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fas fa-heart-pulse"></i> SehatLingkungan
+            </h1>
+            <span class="text-sm bg-emerald-700 px-3 py-1 rounded-full border border-emerald-400">UTS Cloud Computing</span>
         </div>
+    </nav>
 
-        <h2 style="color: var(--primary);">📋 Dasbor Pemantauan Publik</h2>
-        
-        <% if (laporan.length === 0) { %>
-            <div class="empty-state">
-                Belum ada laporan yang masuk. Lingkungan Anda masih aman!
-            </div>
-        <% } else { %>
-            <div class="report-grid">
-                <% laporan.forEach(function(item) { %>
-                    <div class="report-card">
-                        <% if (item.foto_url) { %>
-                            <img src="<%= item.foto_url %>" alt="Bukti Laporan" class="report-img" loading="lazy">
-                        <% } %>
-                        <div class="report-body">
-                            <div class="report-meta">
-                                <strong>👤 <%= item.nama_pelapor %></strong> <br>
-                                🕒 <%= new Date(item.tanggal).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) %>
-                            </div>
-                            <div class="report-desc">
-                                "<%= item.deskripsi %>"
-                            </div>
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-semibold mb-4 text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-edit text-emerald-600"></i> Buat Laporan
+                    </h2>
+                    <form action="/lapor" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Nama Pelapor</label>
+                            <input type="text" name="nama_pelapor" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all">
                         </div>
-                    </div>
-                <% }); %>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Deskripsi Masalah</label>
+                            <textarea name="deskripsi" required rows="3" class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Foto Bukti (S3 Storage)</label>
+                            <input type="file" name="foto" required class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95">
+                            Kirim Laporan <i class="fas fa-paper-plane ml-1"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
-        <% } %>
+
+            <div class="lg:col-span-2">
+                <h2 class="text-xl font-semibold mb-4 text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-list-ul text-emerald-600"></i> Pantauan Laporan Terbaru
+                </h2>
+                
+                <% if (laporan.length === 0) { %>
+                    <div class="bg-white p-12 text-center rounded-2xl border-2 border-dashed border-slate-300">
+                        <i class="fas fa-folder-open text-4xl text-slate-300 mb-2"></i>
+                        <p class="text-slate-500">Belum ada laporan masuk. Jadilah yang pertama melaporkan!</p>
+                    </div>
+                <% } else { %>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <% laporan.forEach(item => { %>
+                            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                                <img src="<%= item.foto_url %>" alt="Laporan" class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-bold text-slate-800"><%= item.nama_pelapor %></h3>
+                                        <span class="text-[10px] text-slate-400 uppercase tracking-widest"><%= new Date(item.tanggal).toLocaleDateString('id-ID') %></span>
+                                    </div>
+                                    <p class="text-slate-600 text-sm leading-relaxed"><%= item.deskripsi %></p>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
     </div>
+
+    <footer class="text-center py-10 text-slate-400 text-xs">
+        &copy; 2026 SehatLingkungan - Syadda Abdullah (152022037) <br>
+        Powered by AWS EC2, RDS, and S3
+    </footer>
 
 </body>
 </html>
