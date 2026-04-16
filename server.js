@@ -124,6 +124,35 @@ app.post('/lapor', upload.single('foto'), (req, res) => {
     });
 });
 
+// 3. UPDATE: Mengubah deskripsi laporan
+app.post('/edit/:id', (req, res) => {
+    const { id } = req.params;
+    const { deskripsi } = req.body;
+    const sql = 'UPDATE laporan SET deskripsi = ? WHERE id = ?';
+    
+    db.query(sql, [deskripsi, id], (err, result) => {
+        if (err) {
+            console.error('❌ Error Update:', err);
+            return res.status(500).send(err);
+        }
+        res.json({ message: 'Laporan berhasil diperbarui' });
+    });
+});
+
+// 4. DELETE: Menghapus laporan dari database
+app.post('/hapus/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = 'DELETE FROM laporan WHERE id = ?';
+    
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error('❌ Error Delete:', err);
+            return res.status(500).send(err);
+        }
+        res.json({ message: 'Laporan berhasil dihapus' });
+    });
+});
+
 // ==========================================
 // JALANKAN SERVER
 // ==========================================
