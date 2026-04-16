@@ -30,21 +30,25 @@ const upload = multer({ storage: multer.memoryStorage() });
 // ==========================================
 // KONFIGURASI DATABASE RDS (MYSQL)
 // ==========================================
-const db = mysql.createConnection({
+// Menggunakan createPool agar koneksi otomatis tersambung kembali jika putus
+const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-db.connect((err) => {
+// Cek koneksi pool
+db.getConnection((err, connection) => {
     if (err) {
         console.error('❌ Gagal terhubung ke RDS MySQL:', err.message);
         return;
     }
-    console.log('✅ Berhasil terhubung ke database RDS MySQL');
+    console.log('✅ Berhasil terhubung ke database RDS MySQL (Pool)');
     
-    // Auto-migrate: Buat tabel jika belum ada di database
     const sqlCreateTable = `
         CREATE TABLE IF NOT EXISTS laporan (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -54,7 +58,8 @@ db.connect((err) => {
             tanggal TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `;
-    db.query(sqlCreateTable, (err, result) => {
+    connection.query(sqlCreateTable, (err) => {
+        connection.release(); // Kembalikan koneksi ke pool
         if (err) console.error('❌ Gagal memeriksa/membuat tabel:', err);
         else console.log('✅ Tabel "laporan" siap digunakan');
     });
