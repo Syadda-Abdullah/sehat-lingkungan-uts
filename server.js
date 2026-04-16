@@ -69,15 +69,29 @@ db.getConnection((err, connection) => {
 // ROUTING (ALUR HALAMAN)
 // ==========================================
 
-// 1. Tampilkan Halaman Utama (Dashboard)
+// 1. Tampilkan Halaman Utama & Statistik Dashboard
 app.get('/', (req, res) => {
-    const sql = 'SELECT * FROM laporan ORDER BY tanggal DESC';
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Terjadi kesalahan pada server database.');
-        }
-        res.render('index', { laporan: results });
+    const sqlLaporan = 'SELECT * FROM laporan ORDER BY tanggal DESC';
+    const sqlStats = `
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN foto_url LIKE '%.pdf' THEN 1 ELSE 0 END) as pdf_count,
+            SUM(CASE WHEN foto_url NOT LIKE '%.pdf' THEN 1 ELSE 0 END) as img_count
+        FROM laporan
+    `;
+
+    db.query(sqlLaporan, (err, results) => {
+        if (err) return res.status(500).send('Error Database');
+
+        db.query(sqlStats, (err, stats) => {
+            // Berikan nilai default 0 jika stats tidak ditemukan atau error
+            const reportStats = (stats && stats[0]) ? stats[0] : { total: 0, pdf_count: 0, img_count: 0 };
+            
+            res.render('index', { 
+                laporan: results || [], 
+                stats: stats[0] || { total: 0, pdf_count: 0, img_count: 0 } 
+            });
+        });
     });
 });
 

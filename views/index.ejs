@@ -6,6 +6,7 @@
     <title>SehatLingkungan | Sistem Laporan Masyarakat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-50 font-sans">
 
@@ -14,12 +15,16 @@
             <h1 class="text-2xl font-bold flex items-center gap-2">
                 <i class="fas fa-heart-pulse"></i> SehatLingkungan
             </h1>
-            <span class="text-sm bg-emerald-700 px-3 py-1 rounded-full border border-emerald-400">UTS Cloud Computing</span>
+            <div class="flex gap-4">
+                <button onclick="showTab('laporan')" class="text-sm font-medium hover:text-emerald-200 transition">Laporan</button>
+                <button onclick="showTab('dashboard')" class="text-sm font-medium hover:text-emerald-200 transition">Dashboard</button>
+            </div>
         </div>
     </nav>
 
     <div class="container mx-auto px-4 py-8 max-w-5xl">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div id="tab-laporan" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <div class="lg:col-span-1">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -54,7 +59,7 @@
                 <% if (laporan.length === 0) { %>
                     <div class="bg-white p-12 text-center rounded-2xl border-2 border-dashed border-slate-300">
                         <i class="fas fa-folder-open text-4xl text-slate-300 mb-2"></i>
-                        <p class="text-slate-500">Belum ada laporan masuk. Jadilah yang pertama melaporkan!</p>
+                        <p class="text-slate-500">Belum ada laporan masuk.</p>
                     </div>
                 <% } else { %>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -71,10 +76,10 @@
                                     <% } %>
                                     
                                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                        <a href="<%= item.foto_url %>" target="_blank" class="bg-white p-2 rounded-full text-slate-800 hover:bg-emerald-500 hover:text-white transition-colors shadow-lg" title="Lihat Full Screen">
+                                        <a href="<%= item.foto_url %>" target="_blank" class="bg-white p-2 rounded-full text-slate-800 hover:bg-emerald-500 hover:text-white transition-colors shadow-lg">
                                             <i class="fas fa-expand"></i>
                                         </a>
-                                        <a href="<%= item.foto_url %>" download class="bg-white p-2 rounded-full text-slate-800 hover:bg-blue-500 hover:text-white transition-colors shadow-lg" title="Download File">
+                                        <a href="<%= item.foto_url %>" download class="bg-white p-2 rounded-full text-slate-800 hover:bg-blue-500 hover:text-white transition-colors shadow-lg">
                                             <i class="fas fa-download"></i>
                                         </a>
                                     </div>
@@ -104,8 +109,36 @@
                     </div>
                 <% } %>
             </div>
-
         </div>
+
+        <div id="tab-dashboard" class="hidden animate-fadeIn">
+            <h2 class="text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+                <i class="fas fa-chart-pie text-emerald-600"></i> Statistik Real-time
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
+                    <p class="text-slate-500 text-xs uppercase tracking-widest font-bold">Total Laporan</p>
+                    <h3 class="text-4xl font-black text-emerald-600 mt-2"><%= stats.total %></h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
+                    <p class="text-slate-500 text-xs uppercase tracking-widest font-bold">File PDF</p>
+                    <h3 class="text-4xl font-black text-red-500 mt-2"><%= stats.pdf_count %></h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
+                    <p class="text-slate-500 text-xs uppercase tracking-widest font-bold">File Gambar</p>
+                    <h3 class="text-4xl font-black text-blue-500 mt-2"><%= stats.img_count %></h3>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col items-center">
+                <h3 class="text-lg font-bold mb-6 text-slate-700">Persentase Tipe File</h3>
+                <div style="width: 300px; height: 300px;">
+                    <canvas id="ctxChart"></canvas>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <footer class="text-center py-10 text-slate-400 text-xs">
@@ -131,7 +164,44 @@
                 .then(() => window.location.reload());
             }
         }
-    </script>
 
+        function showTab(tabName) {
+                const laporanContent = document.getElementById('tab-laporan');
+                const dashboardContent = document.getElementById('tab-dashboard');
+                
+                if (tabName === 'dashboard') {
+                    laporanContent.classList.add('hidden');
+                    dashboardContent.classList.remove('hidden');
+                } else {
+                    laporanContent.classList.remove('hidden');
+                    dashboardContent.classList.add('hidden');
+                }
+            }
+
+            // Inisialisasi Grafik - Pastikan menggunakan tag EJS yang bersih
+            const imgCount = parseInt("<%= stats.img_count %>") || 0;
+            const pdfCount = parseInt("<%= stats.pdf_count %>") || 0;
+
+            const ctx = document.getElementById('ctxChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Gambar', 'PDF'],
+                    datasets: [{
+                        data: [imgCount, pdfCount],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        hoverOffset: 10,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });        
+    </script>
 </body>
 </html>
